@@ -5,8 +5,13 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import string
 
+import warnings
+warnings.filterwarnings('ignore', 'No artists with labels found to put in legend.')
+warnings.filterwarnings('ignore', 'More than 20 figures have been opened.')
+warnings.filterwarnings('ignore', 'No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.')
+
 # Define the folder path containing event folders
-event_folders = "/Users/noahroni/Documents/Test/Event_Folders"
+event_folders = "/Users/noahroni/Documents/Test/Event_Folders_grapph/"
 
 # Iterate over all event folders
 for event_folder in os.listdir(event_folders):
@@ -33,7 +38,11 @@ for event_folder in os.listdir(event_folders):
             file_path = os.path.join(folder_path, file_name)
             
             # Read the file into a DataFrame
-            df = pd.read_csv(file_path, encoding='latin1')
+            try:
+                df = pd.read_csv(file_path)
+            except UnicodeDecodeError:
+                print(f"Error decoding file: {file_path}. Skipping...")
+                continue
                 
             # Convert the 'selection_md.name' column to text format
             df['selection_md.name'] = df['selection_md.name'].astype(str)
@@ -63,16 +72,16 @@ for event_folder in os.listdir(event_folders):
                     
                     # Plot the chart
                     fig, ax1 = plt.subplots(figsize=(18, 12))
-                    ax1.plot(time_data_sorted, price_yes_data_sorted, label='Price', linestyle='-', color='green')
-                    ax1.set_ylabel('Price')
-                    ax1.set_xlabel('Time')
+                    ax1.plot(time_data_sorted, price_yes_data_sorted, linestyle='-', color='green')
+                    ax1.set_ylabel('Price', fontsize=12)
+                    ax1.set_xlabel('Time', fontsize=12)
                     ax1.tick_params(axis='x', labelrotation=90)
                     
                     ax2 = ax1.twinx()
-                    ax2.bar(time_data_sorted, volume_yes_data_sorted, label='Volume', color='blue', alpha=0.5)
+                    ax2.bar(time_data_sorted, volume_yes_data_sorted, color='blue', alpha=0.5)
                     ax2.set_ylabel('Volume', color='blue')
                     ax2.tick_params(axis='y', labelcolor='blue')
-                    
+
                     # Check if selection_status includes "WINNER" or "LOSER"
                     status = ""
                     if "WINNER" in filtered_df['selection_status'].values:
@@ -113,16 +122,10 @@ for event_folder in os.listdir(event_folders):
 
                     #plt.show()
                     plt.close()
-
-                else:
-                    print(f"No data available for option: {option}. Skipping...")
-
+                
 ### Percent Money Over Time 
 ### Each option on one graph
-
-
-
-                
+ 
             # Convert the 'selection_md.name' column to text format
             df['selection_md.name'] = df['selection_md.name'].astype(str)
             
@@ -170,10 +173,9 @@ for event_folder in os.listdir(event_folders):
                     time_data_sorted, percent_money_data_sorted = zip(*sorted(zip(time_data, percent_money_data)))
                     
                     ax1.plot(time_data_sorted, percent_money_data_sorted, label=option, linestyle='-', color='green')
-                    ax1.set_ylabel('Percent Money')
-                    ax1.set_xlabel('Time')
+                    ax1.set_ylabel('Percent Money', fontsize=12)
+                    ax1.set_xlabel('Time', fontsize=12)
                     ax1.tick_params(axis='x', labelrotation=80)
-                    ax1.legend()
                     plt.tight_layout()
                     
                     # Define the output folder paths
@@ -197,14 +199,11 @@ for event_folder in os.listdir(event_folders):
                     plt.savefig(output_file)
 
                     #plt.show()
-                    plt.close()
+                    plt.close()  
 
-                else:
-                    print(f"No data available for option: {option}. Skipping...")
-
+### Percent Money Over Time 
 ### All options on one graph
 
-        
             # Convert the 'selection_md.name' column to text format
             df['selection_md.name'] = df['selection_md.name'].astype(str)
             
@@ -213,6 +212,9 @@ for event_folder in os.listdir(event_folders):
 
             # Plot the chart
             fig, ax1 = plt.subplots(figsize=(18, 12))
+        
+            # Iterate over each option
+            lines = []  # Create an empty list to store line objects
 
             # Iterate over each option
             for option in options:
@@ -235,8 +237,7 @@ for event_folder in os.listdir(event_folders):
                         status = "LOSER"
                         plt_title = 'Percent Money On Market - No WINNER'
                         plt_title_color ='black'  # Default title color
-                
-                                
+                            
                     plt.title(plt_title, color=plt_title_color)
                     plt.tight_layout()
                 
@@ -257,21 +258,23 @@ for event_folder in os.listdir(event_folders):
                     # Sort the time data
                     time_data_sorted, percent_money_data_sorted = zip(*sorted(zip(time_data, percent_money_data)))
 
-                    # Plot the data for the current option
-                    ax1.plot(time_data_sorted, percent_money_data_sorted, label=option, linestyle='-')
+                    # Plot the data for the current option and store the line object
+                    line, = ax1.plot(time_data_sorted, percent_money_data_sorted, linestyle='-', label=option)
+                    lines.append(line)
                     plt.tight_layout()
 
-                    
-
             # Set labels and title
-            ax1.set_xlabel('Time')
-            ax1.set_ylabel('Percent Money')
+            ax1.set_xlabel('Time', fontsize=12)
+            ax1.set_ylabel('Percent Money', fontsize=12)
             ax1.tick_params(axis='x', labelrotation=75)
+
             # Format the x-axis tick labels
             ax1.xaxis.set_major_locator(mdates.MinuteLocator(interval=5))
             date_format = mdates.DateFormatter('%d:%m:%Y %H:%M:%S')
             ax1.xaxis.set_major_formatter(date_format)
-            ax1.legend(loc='upper right')
+
+            # Add the legend with the provided labels
+            ax1.legend(handles=lines)
             plt.tight_layout()
 
             # Define the output folder paths
@@ -350,14 +353,14 @@ for event_folder in os.listdir(event_folders):
                     
                     # Sort the time data
                     time_data_sorted, money_data_sorted = zip(*sorted(zip(time_data, money_data)))
-                    
+                
                     # Plot the chart
                     
                     ax1.plot(time_data_sorted, money_data_sorted, label=option, linestyle='-', color='green')
-                    ax1.set_ylabel('Money')
-                    ax1.set_xlabel('Time')
+                    ax1.set_ylabel('Money', fontsize=12)
+                    ax1.set_xlabel('Time', fontsize=12)
                     ax1.tick_params(axis='x', labelrotation=80)
-                    ax1.legend()
+                    
                     plt.tight_layout()
 
                     # Define the output folder paths
@@ -385,11 +388,8 @@ for event_folder in os.listdir(event_folders):
 
                     #plt.show()     
 
-                else:
-                    print(f"No data available for option: {option}. Skipping...")
-                    
-                    # Close the figure to avoid the warning
-
+                
+### Total Money Over Time
 ### All options on one graph    
 
                 
@@ -401,6 +401,9 @@ for event_folder in os.listdir(event_folders):
 
             # Plot the chart
             fig, ax1 = plt.subplots(figsize=(18, 12))
+
+            # Iterate over each option
+            lines = []  # Create an empty list to store line objects
 
             # Iterate over each option
             for option in options:
@@ -424,7 +427,7 @@ for event_folder in os.listdir(event_folders):
                         plt_title = 'Total Money On Market - No WINNER'
                         plt_title_color ='black'  # Default title color
                 
-                                
+                    # Plot the data for the current option and store the line object
                     plt.title(plt_title, color=plt_title_color)
                     plt.tight_layout()
 
@@ -439,28 +442,31 @@ for event_folder in os.listdir(event_folders):
                     
                     # Sort the filtered DataFrame by 'publishTime'
                     filtered_df = filtered_df.sort_values(by=['publishTime'])
+                    
                     # Extract relevant columns from the filtered DataFrame
                     time_data = filtered_df['publishTime']
-
                     money_data = filtered_df['selection_totalMatched']
 
                     # Sort the time data
                     time_data_sorted, money_data_sorted = zip(*sorted(zip(time_data, money_data)))
                     
-                    # Plot the data for the current option
-                    ax1.plot(time_data_sorted, money_data_sorted, label=option, linestyle='-')
+                    # Plot the data for the current option and store the line object
+                    line, = ax1.plot(time_data_sorted, money_data_sorted, linestyle='-', label=option)
+                    lines.append(line)
                     plt.tight_layout()
-
 
         # Set labels and title
             ax1.set_xlabel('Time', fontsize=12)
             ax1.set_ylabel('Total Money', fontsize=12)
             ax1.tick_params(axis='x', labelrotation=75)
+            
             # Format the x-axis tick labels
             ax1.xaxis.set_major_locator(mdates.MinuteLocator(interval=5))
             date_format = mdates.DateFormatter('%d:%m:%Y %H:%M:%S')
             ax1.xaxis.set_major_formatter(date_format)
-            ax1.legend(loc='upper right')
+            
+            # Add the legend with the provided labels
+            ax1.legend(handles=lines)
             plt.tight_layout()
 
             # Define the output folder paths
@@ -482,7 +488,4 @@ for event_folder in os.listdir(event_folders):
             #plt.show()
             plt.close()
 
-
-            
-
-            
+        plt.close('all')
