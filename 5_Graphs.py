@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import string
+from matplotlib.ticker import Locator
 
 import warnings
 warnings.filterwarnings('ignore', 'No artists with labels found to put in legend.')
@@ -11,7 +12,7 @@ warnings.filterwarnings('ignore', 'More than 20 figures have been opened.')
 warnings.filterwarnings('ignore', 'No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.')
 
 # Define the folder path containing event folders
-event_folders = "/Users/noahroni/Documents/Test/Event_Folders_grapph/"
+event_folders = "/Users/noahroni/Documents/Test/Event_Folders_errors/"
 
 # Iterate over all event folders
 for event_folder in os.listdir(event_folders):
@@ -49,6 +50,9 @@ for event_folder in os.listdir(event_folders):
             
             # Get the unique options available in the 'selection_md.name' column
             options = df['selection_md.name'].unique()
+
+            # Increase the MAXTICKS value
+            Locator.MAXTICKS = 20000
 
             # Iterate over each option
             for option in options:

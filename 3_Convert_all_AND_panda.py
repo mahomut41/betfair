@@ -8,6 +8,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import ElementClickInterceptedException, ElementNotInteractableException, NoSuchElementException
+import subprocess
 
 pd.plotting.register_matplotlib_converters()
 import matplotlib.pyplot as plt
@@ -305,7 +306,7 @@ for file_name in os.listdir(directory_path):
                             
                             # Click on the Download CSV button
                         download_csv_button.click()
-                        time.sleep(14)
+                        time.sleep(15)
                         driver.execute_script("arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});", market_type_element)
 
 
@@ -321,7 +322,7 @@ for file_name in os.listdir(directory_path):
                             
                             # Click on the Download CSV button
                         download_csv_button.click()
-                        time.sleep(14)
+                        time.sleep(15)
                         
                         # Scroll back up to the top of the page
                         driver.execute_script("window.scrollTo(0, 0);")        
@@ -345,12 +346,12 @@ for file_name in os.listdir(directory_path):
                     else:
                         print("Market ID not found in the main content text.")
 
-                    def open_file_in_folder(file_path):
-                        try:
+                    #def open_file_in_folder(file_path):
+                     #   try:
                             # Open the file by executing a command-line operation
-                            os.system(f'open "{file_path}"')  # For Mac
-                        except Exception as e:
-                            print(f"Error occurred while opening the file: {e}")
+                      #      os.system(f'open "{file_path}"')  # For Mac
+                       # except Exception as e:
+                        #    print(f"Error occurred while opening the file: {e}")
 
                     # Define the path to the Downloads folder
                     home_dir = os.path.expanduser("~")
@@ -367,8 +368,15 @@ for file_name in os.listdir(directory_path):
                         market_id_zip_file = os.path.join(download_folder, f"{market_id}.zip")
 
                         # Call the function to open the downloaded zip file
-                        open_file_in_folder(market_id_zip_file)
+                        #open_file_in_folder(market_id_zip_file)
 
+                        # Unzip the file with a single click
+                        try:
+                            subprocess.run(["open", market_id_zip_file], check=True)
+                        except subprocess.CalledProcessError as e:
+                            print(f"Error occurred while unzipping the file: {e}")
+
+                    
                         time.sleep(0.1)
 
                         # Define the path to the downloaded zip file (assuming it's already downloaded)
@@ -424,7 +432,7 @@ for file_name in os.listdir(directory_path):
                         filename = f'{event_name}({market_name}).csv' # dont forget to erase ""
 
                         # Define the main folder and event name
-                        main_folder = "Event_Folders_test"
+                        main_folder = "Event_Folders_test1"
                         # Create the main folder if it doesn't exist
                         if not os.path.exists(main_folder):
                             os.makedirs(main_folder)
