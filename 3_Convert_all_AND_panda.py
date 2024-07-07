@@ -9,6 +9,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import ElementClickInterceptedException, ElementNotInteractableException, NoSuchElementException
 import subprocess
+import zipfile
 
 pd.plotting.register_matplotlib_converters()
 import matplotlib.pyplot as plt
@@ -25,10 +26,10 @@ options = webdriver.ChromeOptions()
 driver = webdriver.Chrome(options=chrome_options)
 
 # Specify the path to the directory containing the files
-directory_path = "/Users/noahroni/Documents/error_folder_2/"
+directory_path = "/Users/noahroni/Documents/Market_Folders_bz2"
 
 # Create the error folder path
-error_folder_path = "/Users/noahroni/Documents/error_folder"
+error_folder_path = "/Users/noahroni/Documents/Market_Folders_errors"
 
 if not os.path.exists(error_folder_path):
     os.makedirs(error_folder_path)
@@ -43,19 +44,19 @@ for file_name in os.listdir(directory_path):
 
     try:
         driver.get('https://www.betfairhistoricdata.co.uk/')
-        #time.sleep(1)
+        time.sleep(1)
 
         # Find the file input element
-        file_input = WebDriverWait(driver, 60).until(
+        file_input = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='file']"))
         )
 
         # Upload the file
         file_input.send_keys(file_paths)
-        #time.sleep(2)
-
+        time.sleep(3)
+        
         # Find all market type elements
-        market_type_elements = WebDriverWait(driver, 60).until(
+        market_type_elements = WebDriverWait(driver, 10).until(
             EC.presence_of_all_elements_located((By.XPATH, "//div[@class='v-virtual-scroll']//div[@class='v-list-item__title']"))
         )
         # Scroll down to ensure the button is in view
@@ -67,7 +68,7 @@ for file_name in os.listdir(directory_path):
         )
         # Click on the button two times
         download_settings_button.click()
-        #time.sleep(3)
+        time.sleep(0.3)
 
         try:
             # Wait for the icon element to be clickable
@@ -108,19 +109,20 @@ for file_name in os.listdir(directory_path):
                 input_element = WebDriverWait(driver, 10).until(
                     EC.element_to_be_clickable((By.XPATH, "//div[@class='v-input__append-inner']/div[@class='v-input__icon v-input__icon--append']"))
                 )
-                input_element.click()
             except Exception as e:
                 try:
-                    # Find the input element
-                    input_element = WebDriverWait(driver, 10).until(
-                        EC.presence_of_element_located((By.XPATH, "//input[contains(@id, 'input-')]"))
+                    # Wait for the element to be clickable
+                    element = WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, "//div[@class='v-card__title']/span[@class='text-h5']"))
                     )
+
+                    # Click on the element
+                    element.click()
                 except Exception as e:
-                    print(f"Error occurred while clicking the div element: {e}")
-        
+                    print(f"Error occurred while clicking on the element: {e}")
+        time.sleep(0.5)
         # Iterate through the options to select
         for option in options_to_select:
-
 
             # Clear the input field if it is interactable
             attempts = 0
@@ -129,7 +131,7 @@ for file_name in os.listdir(directory_path):
                     input_element.clear()
                     break
                 except ElementNotInteractableException:
-                    #time.sleep(1)
+                    #time.sleep(0.02)
                     attempts += 1
             
             # Type the option into the input field
@@ -242,7 +244,7 @@ for file_name in os.listdir(directory_path):
         except Exception as e:
             print(f"Error occurred while clicking on the Save button: {e}")
 
-        time.sleep(0.2)
+        time.sleep(1)
 
         max_counts = 24
         click_count = 0
@@ -272,7 +274,7 @@ for file_name in os.listdir(directory_path):
 
                         try:
                             # Wait for the element to be clickable
-                            wait = WebDriverWait(driver, 20)
+                            wait = WebDriverWait(driver, 10)
                             wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "v-list-item__title")))
                             #time.sleep(0.1)
                             
@@ -332,7 +334,7 @@ for file_name in os.listdir(directory_path):
                     ### to convert from zip to csv format
 
                     # Find the main content element
-                    main_content_element = WebDriverWait(driver, 20).until(
+                    main_content_element = WebDriverWait(driver, 10).until(
                         EC.visibility_of_element_located((By.XPATH, '//div[@class="v-card__text"]'))
                     )
 
@@ -370,11 +372,8 @@ for file_name in os.listdir(directory_path):
                         # Call the function to open the downloaded zip file
                         #open_file_in_folder(market_id_zip_file)
 
-                        # Unzip the file with a single click
-                        try:
-                            subprocess.run(["open", market_id_zip_file], check=True)
-                        except subprocess.CalledProcessError as e:
-                            print(f"Error occurred while unzipping the file: {e}")
+                        f = zipfile.ZipFile(market_id_zip_file)
+                        f.extract(f.infolist()[0], download_folder)
 
                     
                         time.sleep(0.1)
@@ -404,12 +403,13 @@ for file_name in os.listdir(directory_path):
 
                         for col in columns_to_convert:
                             market_id_data[col] = pd.to_numeric(market_id_data[col], errors='coerce')
+                            time.sleep(0.5)
 
                         # Format 'publishTime' column as 'YYYY-MM-DD HH:MM:SS.%f'
-                        market_id_data['publishTime'] = market_id_data['publishTime'].apply(lambda x: pd.to_datetime(x).strftime('%Y-%m-%d %H:%M:%S.%f'))
+                        market_id_data['publishTime'] = market_id_data['publishTime'].apply(lambda x: pd.to_datetime(x).strftime('%d.%m.%Y %H:%M:%S.%f'))
 
                         # Convert 'publishTime' column to datetime format
-                        market_id_data['publishTime'] = pd.to_datetime(market_id_data['publishTime'], format='%Y-%m-%d %H:%M:%S.%f')
+                        market_id_data['publishTime'] = pd.to_datetime(market_id_data['publishTime'], format='%d.%m.%Y %H:%M:%S.%f')
 
                         # Get the first publishTime as the start time
                         start_time = market_id_data['publishTime'].iloc[0]
@@ -423,7 +423,7 @@ for file_name in os.listdir(directory_path):
                         # Check if 90 minutes have passed and if the percent of money is 0
                         market_id_data['Status'] = ''
                         for index, row in market_id_data.iterrows():
-                            if row['Minute'] > 90 and row['percent_money_on_market'] == 0:
+                            if row['Minute'] > 90 and row['percent_money_on_market'] == 0 and row['status'] == "CLOSED":
                                 market_id_data.at[index, 'Status'] = 'Match ended'
 
                         # Construct the custom filename
@@ -432,7 +432,7 @@ for file_name in os.listdir(directory_path):
                         filename = f'{event_name}({market_name}).csv' # dont forget to erase ""
 
                         # Define the main folder and event name
-                        main_folder = "Event_Folders_test1"
+                        main_folder = "Market_Folders_csv(all)"
                         # Create the main folder if it doesn't exist
                         if not os.path.exists(main_folder):
                             os.makedirs(main_folder)
@@ -460,7 +460,7 @@ for file_name in os.listdir(directory_path):
                             if os.path.exists(file_path):
                                 # If it exists, remove it
                                 os.remove(file_path)
-                        time.sleep(0.1)
+                        time.sleep(1)
 
             # If no new element was clicked in this iteration, break the loop
             if not new_element_clicked:
@@ -478,4 +478,3 @@ for file_name in os.listdir(directory_path):
 
 # Quit the driver
 driver.quit()
-

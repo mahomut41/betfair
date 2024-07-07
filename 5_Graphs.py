@@ -3,19 +3,23 @@ import re
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+from matplotlib.ticker import MaxNLocator  # Import MaxNLocator
 import string
-from matplotlib.ticker import Locator
-
+import shutil
 import warnings
-warnings.filterwarnings('ignore', 'No artists with labels found to put in legend.')
+
 warnings.filterwarnings('ignore', 'More than 20 figures have been opened.')
-warnings.filterwarnings('ignore', 'No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.')
 
 # Define the folder path containing event folders
-event_folders = "/Users/noahroni/Documents/Test/Event_Folders_errors/"
+event_folders = "/Users/noahroni/Documents/Market_Folders_csv(all)_old_2"
+
+# Create the "folders_with_graphs" folder if it doesn't exist
+folders_with_graphs = os.path.join("/Users/noahroni/Documents/folders_with_graphs")
+os.makedirs(folders_with_graphs, exist_ok=True)
 
 # Iterate over all event folders
 for event_folder in os.listdir(event_folders):
+
     # Construct the full path to the event folder
     folder_path = os.path.join(event_folders, event_folder)
     
@@ -52,7 +56,7 @@ for event_folder in os.listdir(event_folders):
             options = df['selection_md.name'].unique()
 
             # Increase the MAXTICKS value
-            Locator.MAXTICKS = 20000
+            #Locator.MAXTICKS = 2000000
 
             # Iterate over each option
             for option in options:
@@ -64,8 +68,10 @@ for event_folder in os.listdir(event_folders):
                 filtered_df = filtered_df[(filtered_df['percent_money_on_market'] != 0)]
                 filtered_df = filtered_df[(filtered_df['selection_ex.availableToBack.price'] != 0) & (filtered_df['selection_ex.availableToBack.price'].notna())]
 
+ 
                 # Check if the filtered DataFrame is not empty
                 if not filtered_df.empty:
+                    
                     # Extract relevant columns from the filtered DataFrame
                     time_data = filtered_df['publishTime']
                     price_data = filtered_df['selection_ex.availableToBack.price']
@@ -79,7 +85,8 @@ for event_folder in os.listdir(event_folders):
                     ax1.plot(time_data_sorted, price_yes_data_sorted, linestyle='-', color='green')
                     ax1.set_ylabel('Price', fontsize=12)
                     ax1.set_xlabel('Time', fontsize=12)
-                    ax1.tick_params(axis='x', labelrotation=90)
+                    ax1.tick_params(axis='x', labelrotation=80)
+                    #ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M:%S'))
                     
                     ax2 = ax1.twinx()
                     ax2.bar(time_data_sorted, volume_yes_data_sorted, color='blue', alpha=0.5)
@@ -102,6 +109,10 @@ for event_folder in os.listdir(event_folders):
                         plt_title_color = 'black'
                     
                     plt.title(plt_title, color=plt_title_color)
+                    # Add legend
+                    ax1.legend(['Price'], loc='upper left')
+                    ax2.legend(['Volume'], loc='upper right')
+
                     plt.tight_layout()
                     
                     # Define the output folder paths
@@ -130,16 +141,9 @@ for event_folder in os.listdir(event_folders):
 ### Percent Money Over Time 
 ### Each option on one graph
  
-            # Convert the 'selection_md.name' column to text format
-            df['selection_md.name'] = df['selection_md.name'].astype(str)
-            
-            # Get the unique options available in the 'selection_md.name' column
-            options = df['selection_md.name'].unique()
-            
             # Iterate over each option
             for option in options:
-                #print(option)
-                
+
                 # Filter the DataFrame based on the selected option
                 filtered_df = df[df['selection_md.name'] == option]
 
@@ -170,7 +174,7 @@ for event_folder in os.listdir(event_folders):
                 if not filtered_df.empty:
                 
                     # Extract relevant columns from the filtered DataFrame
-                    time_data = filtered_df['publishTime']
+                    time_data = pd.to_datetime(filtered_df['publishTime'], format='%d.%m.%Y %H:%M:%S', dayfirst=True)
                     percent_money_data = filtered_df['percent_money_on_market']          
                     
                     # Sort the time data
@@ -180,6 +184,11 @@ for event_folder in os.listdir(event_folders):
                     ax1.set_ylabel('Percent Money', fontsize=12)
                     ax1.set_xlabel('Time', fontsize=12)
                     ax1.tick_params(axis='x', labelrotation=80)
+                    
+                    # Use MaxNLocator for better tick placement
+                    ax1.xaxis.set_major_locator(mdates.AutoDateLocator())
+                    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d:%m:%Y %H:%M:%S'))
+                    #ax1.xaxis.set_major_locator(mdates.MinuteLocator(interval=5))
                     plt.tight_layout()
                     
                     # Define the output folder paths
@@ -207,12 +216,6 @@ for event_folder in os.listdir(event_folders):
 
 ### Percent Money Over Time 
 ### All options on one graph
-
-            # Convert the 'selection_md.name' column to text format
-            df['selection_md.name'] = df['selection_md.name'].astype(str)
-            
-            # Get the unique options available in the 'selection_md.name' column
-            options = df['selection_md.name'].unique()
 
             # Plot the chart
             fig, ax1 = plt.subplots(figsize=(18, 12))
@@ -251,7 +254,7 @@ for event_folder in os.listdir(event_folders):
                 if not filtered_df.empty:
 
                     # Convert 'publishTime' to datetime
-                    filtered_df['publishTime'] = pd.to_datetime(filtered_df['publishTime'])
+                    filtered_df['publishTime'] = pd.to_datetime(filtered_df['publishTime'], format='%d.%m.%Y %H:%M:%S', dayfirst=True)
                     # Sort the filtered DataFrame by 'publishTime'
                     filtered_df = filtered_df.sort_values(by=['publishTime'])
 
@@ -272,10 +275,12 @@ for event_folder in os.listdir(event_folders):
             ax1.set_ylabel('Percent Money', fontsize=12)
             ax1.tick_params(axis='x', labelrotation=75)
 
+            # Use MaxNLocator for better tick placement
+            ax1.xaxis.set_major_locator(mdates.AutoDateLocator())
+                
             # Format the x-axis tick labels
-            ax1.xaxis.set_major_locator(mdates.MinuteLocator(interval=5))
-            date_format = mdates.DateFormatter('%d:%m:%Y %H:%M:%S')
-            ax1.xaxis.set_major_formatter(date_format)
+            ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d:%m:%Y %H:%M:%S'))
+            #ax1.xaxis.set_major_locator(mdates.MinuteLocator(interval=5))
 
             # Add the legend with the provided labels
             ax1.legend(handles=lines)
@@ -352,7 +357,7 @@ for event_folder in os.listdir(event_folders):
                 if not filtered_df.empty:
 
                     # Extract relevant columns from the filtered DataFrame
-                    time_data = filtered_df['publishTime']
+                    time_data = pd.to_datetime(filtered_df['publishTime'], format='%d.%m.%Y %H:%M:%S', dayfirst=True)
                     money_data = filtered_df['selection_totalMatched']
                     
                     # Sort the time data
@@ -365,6 +370,10 @@ for event_folder in os.listdir(event_folders):
                     ax1.set_xlabel('Time', fontsize=12)
                     ax1.tick_params(axis='x', labelrotation=80)
                     
+                    # Use MaxNLocator for better tick placement
+                    ax1.xaxis.set_major_locator(mdates.AutoDateLocator())
+                    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d:%m:%Y %H:%M:%S'))
+                    #ax1.xaxis.set_major_locator(mdates.MinuteLocator(interval=5))
                     plt.tight_layout()
 
                     # Define the output folder paths
@@ -442,7 +451,7 @@ for event_folder in os.listdir(event_folders):
                 if not filtered_df.empty:
 
                     # Convert 'publishTime' to datetime
-                    filtered_df['publishTime'] = pd.to_datetime(filtered_df['publishTime'])
+                    filtered_df['publishTime'] = pd.to_datetime(filtered_df['publishTime'], format='%d.%m.%Y %H:%M:%S', dayfirst=True)
                     
                     # Sort the filtered DataFrame by 'publishTime'
                     filtered_df = filtered_df.sort_values(by=['publishTime'])
@@ -464,10 +473,12 @@ for event_folder in os.listdir(event_folders):
             ax1.set_ylabel('Total Money', fontsize=12)
             ax1.tick_params(axis='x', labelrotation=75)
             
+            # Use MaxNLocator for better tick placement
+            ax1.xaxis.set_major_locator(mdates.AutoDateLocator())
+                    
             # Format the x-axis tick labels
-            ax1.xaxis.set_major_locator(mdates.MinuteLocator(interval=5))
-            date_format = mdates.DateFormatter('%d:%m:%Y %H:%M:%S')
-            ax1.xaxis.set_major_formatter(date_format)
+            ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d:%m:%Y %H:%M:%S'))
+            #ax1.xaxis.set_major_locator(mdates.MinuteLocator(interval=5))
             
             # Add the legend with the provided labels
             ax1.legend(handles=lines)
@@ -492,4 +503,6 @@ for event_folder in os.listdir(event_folders):
             #plt.show()
             plt.close()
 
-        plt.close('all')
+    #plt.close('all')
+
+    shutil.move(folder_path, os.path.join(folders_with_graphs, event_folder))

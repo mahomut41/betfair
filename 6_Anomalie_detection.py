@@ -9,7 +9,7 @@ c = conn.cursor()
 
 # Create a table
 c.execute('''CREATE TABLE IF NOT EXISTS anomaly_detections
-             (id INTEGER PRIMARY KEY AUTOINCREMENT, criteria TEXT, market TEXT, bet TEXT, file_path TEXT, explanation TEXT)''')
+             (id INTEGER PRIMARY KEY AUTOINCREMENT, criteria TEXT, market TEXT, bet TEXT, file_path TEXT, explanation TEXT, details TEXT)''')
 
 
 # Define the folder path containing event folders
@@ -50,8 +50,9 @@ for subdirectory in subdirectories:
             market = file['md.eventName'].iloc[0].replace(' v ', '_').replace('/', '_').replace(' ', '')
             bet = file['md.name'].iloc[0].replace(' ', '').replace('/', '')
             explanation = "Anomaly detected based on criteria 1"
+            details = "Percent of money on market is higher than 95%, total matched is higher than 10000, and selection price is higher than 4"
             c.execute("INSERT INTO anomaly_detections (criteria, market, bet, file_path, explanation) VALUES (?, ?, ?, ?, ?)",
-                      (criteria, market, bet, file_path, explanation))
+                      (criteria, market, bet, file_path, explanation, detail))
             conn.commit()
 
             # check if there is a this criteria, as last time goal ??
@@ -68,7 +69,7 @@ for subdirectory in subdirectories:
         # Filter the DataFrame based on the given conditions
         filtered_file = file[
             (file['Minute'] < 40) &
-            ((file['Minute'] > 50) & (file['Minute'] < 85)) &
+            ((file['Minute'] > 50) & (file['Minute'] < (file['Minute'].max() - 4))) &
             (file['selection_ex.availableToBack.price'] > 1.3) &
             (file['selection_totalMatched'] > 15000)
         ]
@@ -82,6 +83,7 @@ for subdirectory in subdirectories:
             market = file['md.eventName'].iloc[0].replace(' v ', '_').replace('/', '_').replace(' ', '')
             bet = file['md.name'].iloc[0].replace(' ', '').replace('/', '')
             explanation = "Anomaly detected based on criteria 2"
+            datails = "During the match except the last 5 minutes,selection total matched is higher than 15000, and selection price is higher than 1.3"
             c.execute("INSERT INTO anomaly_detections (criteria, market, bet, file_path, explanation) VALUES (?, ?, ?, ?, ?)",
                       (criteria, market, bet, file_path, explanation))
             conn.commit()
