@@ -432,7 +432,7 @@ for file_name in os.listdir(directory_path):
                         filename = f'{event_name}({market_name}).csv' # dont forget to erase ""
 
                         # Define the main folder and event name
-                        main_folder = "Market_Folders_csv(all)"
+                        main_folder = "/Users/noahroni/Documents/Betfair/Market_Folders_csv(all)"
                         # Create the main folder if it doesn't exist
                         if not os.path.exists(main_folder):
                             os.makedirs(main_folder)

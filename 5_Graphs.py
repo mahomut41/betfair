@@ -8,17 +8,23 @@ import string
 import shutil
 import warnings
 
+
+
+
 warnings.filterwarnings('ignore', 'More than 20 figures have been opened.')
 
 # Define the folder path containing event folders
-event_folders = "/Users/noahroni/Documents/Market_Folders_csv(all)_old_2"
+event_folders = "/Users/noahroni/Documents/Betfair/Market_Folders_csv"
 
 # Create the "folders_with_graphs" folder if it doesn't exist
-folders_with_graphs = os.path.join("/Users/noahroni/Documents/folders_with_graphs")
+folders_with_graphs = os.path.join("/Users/noahroni/Documents/Betfair/Market_Folder_Final !!!")
 os.makedirs(folders_with_graphs, exist_ok=True)
 
 # Iterate over all event folders
 for event_folder in os.listdir(event_folders):
+    print(event_folder)
+    if event_folder == '.DS_Store':
+            continue  # Skip .DS_Store
 
     # Construct the full path to the event folder
     folder_path = os.path.join(event_folders, event_folder)
@@ -43,10 +49,10 @@ for event_folder in os.listdir(event_folders):
             file_path = os.path.join(folder_path, file_name)
             
             # Read the file into a DataFrame
+            
             try:
                 df = pd.read_csv(file_path)
-            except UnicodeDecodeError:
-                print(f"Error decoding file: {file_path}. Skipping...")
+            except pd.errors.EmptyDataError:
                 continue
                 
             # Convert the 'selection_md.name' column to text format
