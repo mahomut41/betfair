@@ -9,6 +9,7 @@ import os
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 import base64
+
 # Configuration of the Chrome webdriver
 options = webdriver.ChromeOptions()
 

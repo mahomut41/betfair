@@ -17,7 +17,7 @@ warnings.filterwarnings('ignore', 'More than 20 figures have been opened.')
 event_folders = "/Users/noahroni/Documents/Betfair/Market_Folders_csv"
 
 # Create the "folders_with_graphs" folder if it doesn't exist
-folders_with_graphs = os.path.join("/Users/noahroni/Documents/Betfair/Market_Folder_Final !!!")
+folders_with_graphs = os.path.join("/Users/noahroni/Documents/Betfair/Market_Folders_Final !!!")
 os.makedirs(folders_with_graphs, exist_ok=True)
 
 # Iterate over all event folders
@@ -34,8 +34,8 @@ for event_folder in os.listdir(event_folders):
         # Get the list of all files in the event folder
         file_list = [file for file in os.listdir(folder_path) if file.endswith('.csv')]
         
-        ### for all market in one event 
-        ### Price and Volume Over Time
+### for all market in one event 
+### Price and Volume Over Time
 
         # Process each CSV file in the event folder
         for file_name in file_list:

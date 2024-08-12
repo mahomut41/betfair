@@ -6,7 +6,7 @@ import numpy as np  # Import numpy for NaN values
 from pandas.errors import EmptyDataError
 
 # Create a new SQLite database file
-conn = sqlite3.connect('Anomaly_detection_results_2.db')
+conn = sqlite3.connect('Anomaly_detection_results.db')
 c = conn.cursor()
 
 # Create a table

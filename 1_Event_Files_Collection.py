@@ -48,8 +48,8 @@ def find_and_copy_largest_bz2_files(directory, destination_dir, big_files_dir):
 # Main function to start the process
 def main():
     source_dir = "/Users/noahroni/Documents/ADVANCED/2020/Jul/"
-    destination_dir = "/Users/noahroni/Documents/Market_Folders"
-    big_files_dir = "/Users/noahroni/Documents/event_files_big"
+    destination_dir = "/Users/noahroni/Documents/Market_Folders_bz2"
+    big_files_dir = "/Users/noahroni/Documents/Market_Folders_Big"
 
     if not os.path.exists(destination_dir):
         os.makedirs(destination_dir)
